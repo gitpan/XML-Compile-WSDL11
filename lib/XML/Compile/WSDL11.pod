@@ -8,6 +8,8 @@ XML::Compile::WSDL11 - create SOAP messages defined by WSDL 1.1
 
  XML::Compile::WSDL11
    is a XML::Compile::Cache
+   is a XML::Compile::Schema
+   is a XML::Compile
 
 =head1 SYNOPSIS
 
@@ -16,7 +18,9 @@ XML::Compile::WSDL11 - create SOAP messages defined by WSDL 1.1
  use XML::Compile::SOAP11;      # use SOAP version 1.1
  use XML::Compile::Transport::SOAPHTTP;
 
- my $wsdl = XML::Compile::WSDL11->new($wsdlfile);
+ my $wsdl = XML::Compile::WSDL11->new($wsdlfile
+   , server_type => 'BEA'
+   );
  $wsdl->addWSDL(...more WSDL files...);
  $wsdl->importDefinitions(...more schemas...);
 
@@ -64,34 +68,201 @@ As end-user, you do not have to worry about the complex details of the
 messages and the way to exchange them: it's all simple Perl for you.
 Also, faults are handled automatically.  The only complication you have
 to worry about is to shape a nested HASH structure to the sending
-message structure.  XML::Compile::Schema subroutine template may help you.
+message structure.  L<XML::Compile::Schema::template()|XML::Compile::Schema/"Compilers"> may help you.
 
 When the definitions are spread over multiple files you will need to
-use L<addWSDL()|XML::Compile::WSDL11/"Extension"> (wsdl) or XML::Compile::WSDL11 subroutine importDefinitions (additional schema's)
+use L<addWSDL()|XML::Compile::WSDL11/"Extension"> (wsdl) or L<importDefinitions()|XML::Compile::Schema/"Administration"> (additional schema's)
 explicitly. Usually, interreferences between those files are broken.
 Often they reference over networks (you should never trust). So, on
 purpose you B<must explicitly load> the files you need from local disk!
 (of course, it is simple to find one-liners as work-arounds, but I will
 to tell you how!)
 
+See L<documentation in the base class|XML::Compile::Cache/"DESCRIPTION">.
+ 
 =head1 METHODS
 
+See L<documentation in the base class|XML::Compile::Cache/"METHODS">.
+ 
 =head2 Constructors
 
+See L<documentation in the base class|XML::Compile::Cache/"Constructors">.
+ 
 =over 4
 
 =item XML::Compile::WSDL11-E<gt>B<new>(XML, OPTIONS)
 
 The XML is the WSDL file, which is anything accepted by
-XML::Compile subroutine dataToXML.
+L<XML::Compile::dataToXML()|XML::Compile/"Compilers">.
+
+ -Option            --Defined in          --Default
+  allow_undeclared    XML::Compile::Cache   <false>
+  any_element         XML::Compile::Cache   'SKIP_ALL'
+  block_namespace     XML::Compile::Schema  []
+  hook                XML::Compile::Schema  undef
+  hooks               XML::Compile::Schema  []
+  ignore_unused_tags  XML::Compile::Schema  <false>
+  key_rewrite         XML::Compile::Schema  []
+  opts_readers        XML::Compile::Cache   []
+  opts_rw             XML::Compile::Cache   []
+  opts_writers        XML::Compile::Cache   []
+  parser_options      XML::Compile          <many>
+  prefixes            XML::Compile::Cache   <smart>
+  schema_dirs         XML::Compile          undef
+  server_type                               undef
+  typemap             XML::Compile::Cache   {}
+  xsi_type            XML::Compile::Cache   {}
+
+=over 2
+
+=item allow_undeclared => BOOLEAN
+
+=item any_element => CODE|'TAKE_ALL'|'SKIP_ALL'|'ATTEMPT'|'SLOPPY'
+
+=item block_namespace => NAMESPACE|TYPE|HASH|CODE|ARRAY
+
+=item hook => ARRAY-WITH-HOOKDATA | HOOK
+
+=item hooks => ARRAY-OF-HOOK
+
+=item ignore_unused_tags => BOOLEAN|REGEXP
+
+=item key_rewrite => HASH|CODE|ARRAY-of-HASH-and-CODE
+
+=item opts_readers => HASH|ARRAY-of-PAIRS
+
+=item opts_rw => HASH|ARRAY-of-PAIRS
+
+=item opts_writers => HASH|ARRAY-of-PAIRS
+
+=item parser_options => HASH|ARRAY
+
+=item prefixes => HASH|ARRAY-of-PAIRS
+
+=item schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
+
+=item server_type => NAME
+
+[3.01] When you specify the implementation of the server, we can work
+around some of the known bugs and limitation.
+Read L<XML::Compile::SOAP|XML::Compile::SOAP> section "Supported servers" for supported
+servers.
+
+=item typemap => HASH|ARRAY
+
+=item xsi_type => HASH|ARRAY
+
+=back
 
 =back
 
 =head2 Accessors
 
+See L<documentation in the base class|XML::Compile::Cache/"Accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addHook>(HOOKDATA|HOOK|undef)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addHooks>(HOOK, [HOOK, ...])
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addKeyRewrite>(PREDEF|CODE|HASH, ...)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+
+=item XML::Compile::WSDL11-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+
+See L<XML::Compile/"Accessors">
+
+=item $obj-E<gt>B<addSchemas>(XML, OPTIONS)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addTypemap>(PAIR)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addTypemaps>(PAIRS)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<addXsiType>([HASH|ARRAY|LIST])
+
+See L<XML::Compile::Cache/"Accessors">
+
+=item $obj-E<gt>B<allowUndeclared>([BOOLEAN])
+
+See L<XML::Compile::Cache/"Accessors">
+
+=item $obj-E<gt>B<anyElement>('ATTEMPT'|'SLOPPY'|'SKIP_ALL'|'TAKE_ALL'|CODE)
+
+See L<XML::Compile::Cache/"Accessors">
+
+=item $obj-E<gt>B<blockNamespace>(NAMESPACE|TYPE|HASH|CODE|ARRAY)
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<hooks>([READER|WRITER])
+
+See L<XML::Compile::Schema/"Accessors">
+
+=item $obj-E<gt>B<typemap>([HASH|ARRAY|PAIRS])
+
+See L<XML::Compile::Cache/"Accessors">
+
+=item $obj-E<gt>B<useSchema>(SCHEMA, [SCHEMA])
+
+See L<XML::Compile::Schema/"Accessors">
+
+=back
+
+=head2 Prefix management
+
+See L<documentation in the base class|XML::Compile::Cache/"Prefix management">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addPrefixes>([PAIRS|ARRAY|HASH])
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=item $obj-E<gt>B<learnPrefixes>(NODE)
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=item $obj-E<gt>B<prefix>(PREFIX)
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=item $obj-E<gt>B<prefixFor>(URI)
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=item $obj-E<gt>B<prefixed>(TYPE|(NAMESPACE,LOCAL))
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=item $obj-E<gt>B<prefixes>([PARAMS])
+
+See L<XML::Compile::Cache/"Prefix management">
+
+=back
+
 =head2 Compilers
 
+See L<documentation in the base class|XML::Compile::Cache/"Compilers">.
+ 
 =over 4
+
+=item $obj-E<gt>B<addCompileOptions>(['READERS'|'WRITERS'|'RW'], OPTIONS)
+
+See L<XML::Compile::Cache/"Compilers">
 
 =item $obj-E<gt>B<call>(OPNAME, DATA)
 
@@ -107,15 +278,19 @@ example:
    # at runtime (run often)
    my $answer = $wsdl->call($operation, $request);
 
+=item $obj-E<gt>B<compile>(('READER'|'WRITER'), TYPE, OPTIONS)
+
+See L<XML::Compile::Schema/"Compilers">
+
 =item $obj-E<gt>B<compileAll>(['READERS'|'WRITERS'|'RW'|'CALLS', [NAMESPACE]])
 
 [2.20] With explicit C<CALLS> or without any parameter, it will call
-L<compileCalls()|XML::Compile::WSDL11/"Compilers">. Otherwise, see XML::Compile::Cache subroutine compileAll.
+L<compileCalls()|XML::Compile::WSDL11/"Compilers">. Otherwise, see L<XML::Compile::Cache::compileAll()|XML::Compile::Cache/"Compilers">.
 
 =item $obj-E<gt>B<compileCall>(OPERATION|OPNAME, OPTIONS)
 
 [2.37] The call to the OPERATION object (which extends
-XML::Compile::SOAP::Operation) gets compiled and cached so it can
+L<XML::Compile::SOAP::Operation|XML::Compile::SOAP::Operation>) gets compiled and cached so it can
 be used with L<call()|XML::Compile::WSDL11/"Compilers">.
 
 [2.38] Alteratively to an OPERATION object, you may also specify an
@@ -154,6 +329,30 @@ example:
    
    my $answer = $wsdl->call($myop, $request);
 
+=item $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+
+=item XML::Compile::WSDL11-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+
+See L<XML::Compile/"Compilers">
+
+=item $obj-E<gt>B<initParser>(OPTIONS)
+
+=item XML::Compile::WSDL11-E<gt>B<initParser>(OPTIONS)
+
+See L<XML::Compile/"Compilers">
+
+=item $obj-E<gt>B<reader>(TYPE|NAME, OPTIONS)
+
+See L<XML::Compile::Cache/"Compilers">
+
+=item $obj-E<gt>B<template>('XML'|'PERL'|'TREE', ELEMENT, OPTIONS)
+
+See L<XML::Compile::Schema/"Compilers">
+
+=item $obj-E<gt>B<writer>(TYPE|NAME)
+
+See L<XML::Compile::Cache/"Compilers">
+
 =back
 
 =head2 Extension
@@ -162,14 +361,14 @@ example:
 
 =item $obj-E<gt>B<addWSDL>(XMLDATA)
 
-The XMLDATA must be acceptable to XML::Compile subroutine dataToXML and 
+The XMLDATA must be acceptable to L<XML::Compile::dataToXML()|XML::Compile/"Compilers"> and 
 should represent the top-level of a (partial) WSDL document.
 The specification can be spread over multiple files, each of
 which must have a C<definition> root element.
 
 =item $obj-E<gt>B<compileClient>([NAME], OPTIONS)
 
-Creates an XML::Compile::SOAP::Operation temporary object using
+Creates an L<XML::Compile::SOAP::Operation|XML::Compile::SOAP::Operation> temporary object using
 L<operation()|XML::Compile::WSDL11/"Extension">, and then calls C<compileClient()> on that.  This
 results in a code reference which will handle all client-server
 SOAP exchange.
@@ -184,13 +383,13 @@ L<operation()|XML::Compile::WSDL11/"Extension"> (i.e. C<service> and C<port>), a
 
 =item *
 
-XML::Compile::SOAP::Operation subroutine compileClient (there are many of
+L<XML::Compile::SOAP::Operation::compileClient()|XML::Compile::SOAP::Operation/"Handlers"> (there are many of
 these, for instance C<transport_hook> and C<server>)
 
 =back
 
-You B<cannot> pass options for XML::Compile::Schema subroutine compile, like
-C<<sloppy_integers => 0>>, hooks or typemaps this way. Use XML::Compile::WSDL11 subroutine new option opts_rw
+You B<cannot> pass options for L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, like
+C<<sloppy_integers => 0>>, hooks or typemaps this way. Use L<new(opts_rw)|XML::Compile::Cache/"Constructors">
 and friends to declare those.
 
 When you use L<compileCall()|XML::Compile::WSDL11/"Compilers">, the compiled code references get cached
@@ -216,7 +415,7 @@ information.
 =item $obj-E<gt>B<operation>([NAME], OPTIONS)
 
 Collect all information for a certain operation.  Returned is an
-XML::Compile::SOAP::Operation object.
+L<XML::Compile::SOAP::Operation|XML::Compile::SOAP::Operation> object.
 
 An operation is defined by a service name, a port, some bindings,
 and an operation name, which can be specified explicitly and is often
@@ -224,11 +423,12 @@ left-out: in the many configurations where there are no alternative
 choices. In case there are alternatives, you will be requested to
 pick an option.
 
- -Option   --Default
-  action     <undef>
-  operation  <required>
-  port       <only when just one port in WSDL>
-  service    <only when just one service in WSDL>
+ -Option     --Default
+  action       <undef>
+  operation    <required>
+  port         <only when just one port in WSDL>
+  server_type  undef
+  service      <only when just one service in WSDL>
 
 =over 2
 
@@ -246,6 +446,10 @@ one operation defined within the portType.
 
 Required when more than one port is defined.
 
+=item server_type => NAME
+
+Overrules L<new(server_type)|XML::Compile::WSDL11/"Constructors">.
+
 =item service => QNAME|PREFIXED
 
 Required when more than one service is defined.
@@ -256,12 +460,14 @@ Required when more than one service is defined.
 
 =head2 Administration
 
+See L<documentation in the base class|XML::Compile::Cache/"Administration">.
+ 
 =over 4
 
 =item $obj-E<gt>B<declare>(GROUP, COMPONENT|ARRAY, OPTIONS)
 
 Register specific compile OPTIONS for the specific COMPONENT. See also
-XML::Compile::Cache subroutine declare. The GROUP is either C<READER>,
+L<XML::Compile::Cache::declare()|XML::Compile::Cache/"Administration">. The GROUP is either C<READER>,
 C<WRITER>, C<RW> (both reader and writer), or C<OPERATION>.  As COMPONENT,
 you specify the element name (for readers and writers) or operation name
 (for operations). OPTIONS are specified as LIST, ARRAY or HASH.
@@ -271,6 +477,46 @@ example:
    $wsdl->declare(OPERATION => 'GetStockPrice', @extra_opts);
    $wsdl->compileCalls;
    my $answer = $wsdl->call(GetStockPrice => %request);
+
+=item $obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
+
+See L<XML::Compile::Schema/"Administration">
+
+=item $obj-E<gt>B<elements>()
+
+See L<XML::Compile::Schema/"Administration">
+
+=item $obj-E<gt>B<findName>(NAME)
+
+See L<XML::Compile::Cache/"Administration">
+
+=item $obj-E<gt>B<findSchemaFile>(FILENAME)
+
+=item XML::Compile::WSDL11-E<gt>B<findSchemaFile>(FILENAME)
+
+See L<XML::Compile/"Administration">
+
+=item $obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
+
+See L<XML::Compile::Schema/"Administration">
+
+=item $obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+=item XML::Compile::WSDL11-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+See L<XML::Compile/"Administration">
+
+=item $obj-E<gt>B<namespaces>()
+
+See L<XML::Compile::Schema/"Administration">
+
+=item $obj-E<gt>B<types>()
+
+See L<XML::Compile::Schema/"Administration">
+
+=item $obj-E<gt>B<walkTree>(NODE, CODE)
+
+See L<XML::Compile/"Administration">
 
 =back
 
@@ -313,7 +559,7 @@ example:
 =item $obj-E<gt>B<explain>(OPERATION, FORMAT, DIRECTION, OPTIONS)
 
 [2.13]
-Produce templates (see XML::Compile::Schema subroutine template which detail
+Produce templates (see L<XML::Compile::Schema::template()|XML::Compile::Schema/"Compilers"> which detail
 the use of the OPERATION. Currently, only the C<PERL> template FORMAT
 is available.
 
@@ -321,7 +567,7 @@ The DIRECTION of operation is either C<INPUT> (input for the server,
 hence to be produced by the client), or C<OUTPUT> (from the server,
 received by the client).
 
-The actual work is done by XML::Compile::SOAP::Operation subroutine explain. The
+The actual work is done by L<XML::Compile::SOAP::Operation::explain()|XML::Compile::SOAP::Operation/"Helpers">. The
 OPTIONS passed to that method include C<recurse> and C<skip_header>.
 
 example: 
@@ -391,15 +637,62 @@ For available OPTIONS, see L<operations()|XML::Compile::WSDL11/"Introspection">.
 understand the structure of your WSDL: it shows a nested list of
 services, bindings, ports and portTypes.
 
+ -Option       --Defined in         --Default
+  show_declared  XML::Compile::Cache  <true>
+
+=over 2
+
+=item show_declared => BOOLEAN
+
+=back
+
 =back
 
 =head1 DETAILS
 
+See L<documentation in the base class|XML::Compile::Cache/"DETAILS">.
+ 
+=head2 Distribution collection overview
+
+See L<documentation in the base class|XML::Compile::Cache/"Distribution collection overview">.
+ 
+=head2 Comparison
+
+See L<documentation in the base class|XML::Compile::Cache/"Comparison">.
+ 
+=head2 Collecting definitions
+
+See L<documentation in the base class|XML::Compile::Cache/"Collecting definitions">.
+ 
+=head2 Addressing components
+
+See L<documentation in the base class|XML::Compile::Cache/"Addressing components">.
+ 
+=head2 Representing data-structures
+
+See L<documentation in the base class|XML::Compile::Cache/"Representing data-structures">.
+ 
+=head2 Schema hooks
+
+See L<documentation in the base class|XML::Compile::Cache/"Schema hooks">.
+ 
+=head2 Typemaps
+
+See L<documentation in the base class|XML::Compile::Cache/"Typemaps">.
+ 
+=head2 Handling xsi:type
+
+See L<documentation in the base class|XML::Compile::Cache/"Handling xsi:type">.
+ 
+=head2 Key rewrite
+
+See L<documentation in the base class|XML::Compile::Cache/"Key rewrite">.
+ 
 =head2 Initializing SOAP operations via WSDL
 
 When you have a WSDL file, then SOAP is simple.  If there is no such file
 at hand, then it is still possible to use SOAP.  See the DETAILS chapter
-in XML::Compile::SOAP.
+in L<XML::Compile::SOAP|XML::Compile::SOAP>.
 
 The WSDL file contains operations which can be addressed by name.
 In the WSDL file you need to find the name of the port to be used.
@@ -423,10 +716,14 @@ a choice, then you must explicitly select one.
  # see XML::Compile::SOAP chapter DETAILS about call params
  my $answer = $call->(%request);
 
+=head1 DESCRIPTIONS
+
+See L<documentation in the base class|XML::Compile::Cache/"DESCRIPTIONS">.
+ 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSDL11 distribution version 3.00,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSDL11 distribution version 3.01,
+built on January 10, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

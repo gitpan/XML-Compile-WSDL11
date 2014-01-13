@@ -22,5 +22,5 @@ requires:
   Test::More: 0.54
   XML::Compile: 1.37
   XML::Compile::Cache: 0.995
-  XML::Compile::SOAP11: 3.00
-version: 3.00
+  XML::Compile::SOAP11: 3.03
+version: 3.01
