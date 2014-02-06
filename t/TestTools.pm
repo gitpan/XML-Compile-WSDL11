@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package TestTools;
-use vars '$VERSION';
-$VERSION = '3.01';
+our $VERSION = '3.02';
 
 use base 'Exporter';
 

@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package XML::Compile::WSDL11;
-use vars '$VERSION';
-$VERSION = '3.01';
+our $VERSION = '3.02';
 
 use base 'XML::Compile::Cache';
 
