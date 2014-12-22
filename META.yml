@@ -18,9 +18,9 @@ no_index:
     - t
     - inc
 requires:
-  Log::Report: 1.00
+  Log::Report: 1.05
   Test::More: 0.54
-  XML::Compile: 1.37
-  XML::Compile::Cache: 0.995
-  XML::Compile::SOAP11: 3.03
-version: 3.02
+  XML::Compile: 1.48
+  XML::Compile::Cache: 1.03
+  XML::Compile::SOAP11: 3.06
+version: 3.03

@@ -6,7 +6,8 @@ use warnings;
 use strict;
 
 package XML::Compile::WSDL11;
-our $VERSION = '3.02';
+use vars '$VERSION';
+$VERSION = '3.03';
 
 use base 'XML::Compile::Cache';
 
@@ -14,6 +15,7 @@ use Log::Report 'xml-compile-soap', syntax => 'SHORT';
 
 use XML::Compile             ();      
 use XML::Compile::Util       qw/pack_type unpack_type/;
+use XML::Compile::SOAP       ();
 use XML::Compile::SOAP::Util qw/:wsdl11/;
 use XML::Compile::SOAP::Extension;
 
@@ -83,6 +85,7 @@ sub compileAll(;$$)
 
 sub compileCalls(@)
 {   my ($self, %args) = @_;
+    my $long = $args{long_names};
 
     my @ops = $self->operations
       ( service => delete $args{service}
@@ -90,21 +93,28 @@ sub compileCalls(@)
       , binding => delete $args{binding}
       );
 
-    $self->compileCall($_, %args) for @ops;
+    foreach my $op (@ops)
+    {   my $alias = $long ? $op->longName : undef;
+        $self->compileCall($op, alias => $alias, %args);
+    }
+
     $self;
 }
 
 
 sub compileCall($@)
-{   my ($self, $oper, @opts) = @_;
-    my $op    = blessed $oper ? $oper : $self->operation($oper, @opts);
+{   my ($self, $oper, %opts) = @_;
+    my $alias = delete $opts{alias};
+    my $op    = blessed $oper ? $oper : $self->operation($oper, %opts);
 
-    my $name  = $op->name;
+    my $name  = $alias || $op->name;
     error __x"a compiled call for {name} already exists", name => $name
         if $self->{XCW_ccode}{$name};
 
     my $dopts = $self->{XCW_dcopts} || {};
+    my @opts  = %opts;
     push @opts, ref $dopts eq 'ARRAY' ? @$dopts : %$dopts;
+    trace "compiling call `$name'";
     $self->{XCW_ccode}{$name} = $op->compileClient(@opts);
 }
 
@@ -116,7 +126,7 @@ sub call($@)
         or error __x"you can only use call() after compileCalls()";
 
     my $call  = $codes->{$name}
-        or error __x"operation {name} is not known", name => $name;
+        or error __x"operation `{name}' is not known", name => $name;
     
     $call->(@_);
 }
@@ -124,8 +134,8 @@ sub call($@)
 #--------------------------
 
 
-sub addWSDL($)
-{   my ($self, $data) = @_;
+sub addWSDL($%)
+{   my ($self, $data, %args) = @_;
     defined $data or return ();
 
     my ($node, %details) = $self->dataToXML($data);
@@ -175,12 +185,12 @@ sub addWSDL($)
     # no service block when only one port
     unless($index->{service})
     {   # only from this WSDL, cannot use collective $index
-        my @portTypes = map { $_->{wsdl_portType} || () } @$toplevels;
+        my @portTypes = map $_->{wsdl_portType}||(), @$toplevels;
         @portTypes==1
             or error __x"no service definition so needs 1 portType, found {nr}"
                  , nr => scalar @portTypes;
 
-        my @bindings = map { $_->{wsdl_binding} || () } @$toplevels;
+        my @bindings = map $_->{wsdl_binding}||(), @$toplevels;
         @bindings==1
             or error __x"no service definition so needs 1 binding, found {nr}"
                  , nr => scalar @bindings;
@@ -441,7 +451,6 @@ sub findDef($;$)
 
     return (values %$group)[0]
         if keys %$group==1;
-
     my @alts = map $self->prefixed($_), sort keys %$group;
     error __x"explicit selection required: pick one {class} from {alts}"
       , class => $class, alts => join("\n    ", '', @alts);
